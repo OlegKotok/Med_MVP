@@ -1,5 +1,5 @@
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Literal, Optional
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
@@ -10,6 +10,7 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8)
     role: Literal["doctor", "client"]
+    full_name: str = Field(..., min_length=1, max_length=255)
 
 
 class VerifyRequest(BaseModel):
@@ -67,6 +68,7 @@ class PatientResponse(BaseModel):
 class DoctorResponse(BaseModel):
     id: uuid.UUID
     email: str
+    full_name: str
 
     model_config = {"from_attributes": True}
 
@@ -81,9 +83,16 @@ class AppointmentCreate(BaseModel):
     @field_validator("scheduled_at")
     @classmethod
     def must_be_future(cls, v: datetime) -> datetime:
-        if v <= datetime.now(tz=v.tzinfo):
+        # Normalise to UTC before comparing — handles both naive and aware inputs
+        now = datetime.now(timezone.utc)
+        aware = v if v.tzinfo else v.replace(tzinfo=timezone.utc)
+        if aware <= now:
             raise ValueError("scheduled_at must be in the future")
         return v
+
+
+class AppointmentStatusUpdate(BaseModel):
+    status: Literal["confirmed", "cancelled"]
 
 
 class AppointmentResponse(BaseModel):

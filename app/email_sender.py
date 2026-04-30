@@ -32,10 +32,10 @@ def send_password_reset_email(to: str, code: str) -> None:
           f"Your password reset code is: {code}\n\nValid for 15 minutes.")
 
 
-def send_appointment_notification(doctor_email: str, client_email: str, scheduled_at: str, notes: str) -> None:
+def send_appointment_notification(doctor_email: str, client_name: str, client_email: str, scheduled_at: str, notes: str) -> None:
     body = (
         f"New appointment booked.\n\n"
-        f"Client:       {client_email}\n"
+        f"Client:       {client_name} <{client_email}>\n"
         f"Scheduled at: {scheduled_at}\n"
     )
     if notes:

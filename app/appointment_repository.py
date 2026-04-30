@@ -38,6 +38,6 @@ async def get_appointments_for_client(db: AsyncSession, client_id: uuid.UUID) ->
     return list(result.scalars().all())
 
 
-async def get_appointment(db: AsyncSession, appt_id: uuid.UUID) -> Optional[Appointment]:
+async def get_by_id(db: AsyncSession, appt_id: uuid.UUID) -> Optional[Appointment]:
     result = await db.execute(select(Appointment).where(Appointment.id == appt_id))
     return result.scalar_one_or_none()

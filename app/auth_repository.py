@@ -7,11 +7,11 @@ from app.models import User
 
 
 async def create_user(
-    db: AsyncSession, email: str, hashed_password: str, role: str,
+    db: AsyncSession, email: str, full_name: str, hashed_password: str, role: str,
     code: str, code_expires_at: datetime
 ) -> User:
     user = User(
-        email=email, hashed_password=hashed_password, role=role,
+        email=email, full_name=full_name, hashed_password=hashed_password, role=role,
         verification_code=code, code_expires_at=code_expires_at,
     )
     db.add(user)

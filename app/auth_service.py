@@ -55,7 +55,7 @@ async def register(db: AsyncSession, data: RegisterRequest) -> dict:
     if await repo.get_user_by_email(db, data.email):
         raise HTTPException(status_code=400, detail="Email already registered")
     code = _make_code()
-    await repo.create_user(db, data.email, _hash(data.password), data.role, code, _code_expiry())
+    await repo.create_user(db, data.email, data.full_name, _hash(data.password), data.role, code, _code_expiry())
     await db.commit()
     send_verification_email(data.email, code)
     return {"detail": "Verification code sent to your email"}
