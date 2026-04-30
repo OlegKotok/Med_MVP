@@ -1,25 +1,34 @@
-# Development Plan
+# Development Guide
 
-## Goal
+## Setup
+1. Create and activate a virtual environment:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate
+   ```
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Deliver a minimal, production-minded backend with clear structure, test coverage, and clean commit history.
+## Running the Application
+Set the `DATABASE_URL` environment variable if you have a running Postgres instance.
+Otherwise, it defaults to `postgresql+asyncpg://postgres:postgres@localhost:5432/medical_db`.
 
----
+Run with uvicorn:
+```bash
+uvicorn src.main:app --reload
+```
 
-## Principles
+## Running Tests
+Tests use an in-memory SQLite database for simplicity.
+```bash
+pytest
+```
 
-- Small, incremental changes
-
-- Each commit is testable
-
-- Follow TDD where possible
-
-- Avoid overengineering
-
-- Keep code simple and explainable
-
----
-
-## Step-by-step Plan
-
-TBD
+## Project Structure
+- `src/`: Core application code.
+- `tests/`: Test suite.
+- `requirements.txt`: Project dependencies.
+- `ARCHITECTURE.md`: Detailed architectural decisions.
+- `TTD_PLAN.md`: Development roadmap.
