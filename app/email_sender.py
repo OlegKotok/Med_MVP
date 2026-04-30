@@ -6,27 +6,38 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 
-def send_verification_email(to: str, code: str) -> None:
-    """Send the 6-digit verification code.
-
-    Uses real SMTP when SMTP_HOST is set; falls back to console logging
-    so the demo works without any mail server.
-    """
-    subject = "Your verification code"
-    body = f"Your verification code is: {code}\n\nIt expires when you use it."
-
+def _send(to: str, subject: str, body: str) -> None:
+    """Send an email or log it to console in demo mode."""
     if not settings.SMTP_HOST:
-        # Demo mode — print to console so the code is visible during development
-        logger.info("📧 [DEMO] Verification email to %s — code: %s", to, code)
+        logger.info("📧 [DEMO] To: %s | Subject: %s | Body: %s", to, subject, body)
         return
-
     msg = EmailMessage()
     msg["Subject"] = subject
     msg["From"] = settings.SMTP_FROM
     msg["To"] = to
     msg.set_content(body)
-
     with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as smtp:
         smtp.starttls()
         smtp.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
         smtp.send_message(msg)
+
+
+def send_verification_email(to: str, code: str) -> None:
+    _send(to, "Verify your email",
+          f"Your verification code is: {code}\n\nValid for 15 minutes.")
+
+
+def send_password_reset_email(to: str, code: str) -> None:
+    _send(to, "Password reset code",
+          f"Your password reset code is: {code}\n\nValid for 15 minutes.")
+
+
+def send_appointment_notification(doctor_email: str, client_email: str, scheduled_at: str, notes: str) -> None:
+    body = (
+        f"New appointment booked.\n\n"
+        f"Client:       {client_email}\n"
+        f"Scheduled at: {scheduled_at}\n"
+    )
+    if notes:
+        body += f"Notes:        {notes}\n"
+    _send(doctor_email, "New appointment booked", body)

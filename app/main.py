@@ -8,6 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.database import engine, Base
 from app.router import router as patients_router
 from app.auth_router import router as auth_router
+from app.appointment_router import router as appointments_router
 import app.models  # noqa: F401 — registers all models with Base.metadata
 
 FRONTEND = Path(__file__).parent.parent / "frontend"
@@ -35,12 +36,12 @@ async def security_headers(request: Request, call_next):
 
 @app.exception_handler(SQLAlchemyError)
 async def db_exception_handler(request: Request, exc: SQLAlchemyError):
-    """Never leak SQLAlchemy internals to the client."""
     return JSONResponse(status_code=500, content={"detail": "Database error"})
 
 
 app.include_router(auth_router)
 app.include_router(patients_router)
+app.include_router(appointments_router)
 
 app.mount("/static", StaticFiles(directory=FRONTEND), name="static")
 
