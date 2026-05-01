@@ -106,6 +106,7 @@
         <label data-i18n="code">Code</label>
         <input id="verifyCode" type="text" inputmode="numeric" maxlength="6" placeholder="123456" />
         <button class="btn" onclick="doVerify()" data-i18n="verify">Verify</button>
+        <button class="btn" onclick="doResend()" style="margin-top:.6rem;background:#718096" data-i18n="resendCode">Resend code</button>
       </div>
 
       <!-- Forgot / Reset -->
@@ -183,6 +184,7 @@ const TRANSLATIONS = {
     minChars: '(min 8 chars)', code: 'Code', verify: 'Verify',
     sendResetCode: 'Send reset code', sixDigitCode: '6-digit code',
     newPassword: 'New password', setNewPassword: 'Set new password',
+    resendCode: 'Resend code', codeSentAgain: '✓ New code sent. Check your email or server log.',
     verifyHint: 'Enter the 6-digit code sent to your email. In demo mode the code is printed to the server log.',
     registeredPatients: 'Registered Patients', incomingAppointments: 'Incoming Appointments',
     myPatientRecord: 'My Patient Record', dateOfBirth: 'Date of Birth', saveRecord: 'Save Record',
@@ -214,6 +216,7 @@ const TRANSLATIONS = {
     minChars: '(мін. 8 символів)', code: 'Код', verify: 'Підтвердити',
     sendResetCode: 'Надіслати код скидання', sixDigitCode: '6-значний код',
     newPassword: 'Новий пароль', setNewPassword: 'Встановити новий пароль',
+    resendCode: 'Надіслати код повторно', codeSentAgain: '✓ Новий код надіслано. Перевірте пошту або лог сервера.',
     verifyHint: 'Введіть 6-значний код, надісланий на вашу пошту. У демо-режимі код виводиться в лог сервера.',
     registeredPatients: 'Зареєстровані пацієнти', incomingAppointments: 'Вхідні записи',
     myPatientRecord: 'Мій запис пацієнта', dateOfBirth: 'Дата народження', saveRecord: 'Зберегти запис',
@@ -338,6 +341,14 @@ async function doVerify() {
   } else {
     showMsg('verifyMsg', data.detail ?? t('verify'), 'err');
   }
+}
+
+async function doResend() {
+  clearMsg('verifyMsg');
+  const email = document.getElementById('verifyEmail').value.trim();
+  if (!email) { showMsg('verifyMsg', t('enterEmail'), 'err'); return; }
+  await fetch('/auth/resend-verification', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+  showMsg('verifyMsg', t('codeSentAgain'), 'ok');
 }
 
 async function doLogin() {

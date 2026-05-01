@@ -111,5 +111,17 @@ async def reset_password(db: AsyncSession, data: ResetPasswordRequest) -> dict:
     return {"detail": "Password updated. You can now log in."}
 
 
+async def resend_verification(db: AsyncSession, email: str) -> dict:
+    user = await repo.get_user_by_email(db, email)
+    if user and not user.is_verified:
+        code = _make_code()
+        user.verification_code = code
+        user.code_expires_at = _code_expiry()
+        await db.commit()
+        await _send_email_safely(send_verification_email, email, code)
+    # Always return 200 — no account enumeration
+    return {"detail": "If that email is pending verification, a new code has been sent"}
+
+
 async def list_doctors(db: AsyncSession) -> list[User]:
     return await repo.list_doctors(db)

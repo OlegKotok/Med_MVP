@@ -36,6 +36,11 @@ async def reset_password(data: ResetPasswordRequest, db: AsyncSession = Depends(
     return await svc.reset_password(db, data)
 
 
+@router.post("/resend-verification")
+async def resend_verification(data: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
+    return await svc.resend_verification(db, data.email)
+
+
 @router.get("/doctors", response_model=list[DoctorResponse])
 async def list_doctors(db: AsyncSession = Depends(get_db)):
     """Public endpoint — clients use this to pick a doctor when booking."""
