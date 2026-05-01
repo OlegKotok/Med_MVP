@@ -6,21 +6,36 @@ A production-minded async REST API + mobile-first web UI for patient registratio
 
 ---
 
-## One-command demo start
+## One-command demo
 
 ```bash
-./run-demo.sh
+docker compose up --build
 ```
-
-Run it from the project root. The script auto-creates `.env` from `.env.example` if needed and starts the full stack.
 
 Open **http://localhost:8000** — that's it.
 
-The `.env` file is pre-filled with demo values. Verification codes are printed to the Docker log (no mail server needed):
+Verification codes are printed to the Docker log (no mail server needed in demo mode):
 
 ```bash
-docker compose logs api   # look here for verification codes in demo mode
+docker compose logs api   # look here for verification codes
 ```
+
+> The `.env` file is pre-filled with demo values. If it doesn't exist, copy `.env.example`:
+> ```bash
+> cp .env.example .env
+> docker compose up --build
+> ```
+
+### Reset / clean start
+
+If you see `InvalidPasswordError` on startup (stale Postgres volume from a previous run), wipe the DB volume and restart:
+
+```bash
+docker compose down -v   # stops containers AND removes the pgdata volume
+docker compose up --build
+```
+
+> ⚠️ `-v` permanently deletes all data in the database. Use only for a clean demo reset.
 
 ---
 
@@ -28,8 +43,9 @@ docker compose logs api   # look here for verification codes in demo mode
 
 1. Open http://localhost:8000
 2. Click **Register** → enter full name, email, password, and role (`client` or `doctor`)
-3. Click **Verify** → paste the 6-digit code from the Docker log
-4. Click **Log in** → you're in
+3. Run `docker compose logs api` → copy the 6-digit code
+4. Click **Verify** → paste the code
+5. Click **Log in** → you're in
 
 **As a client:**
 - Register a patient record
@@ -40,6 +56,35 @@ docker compose logs api   # look here for verification codes in demo mode
 **As a doctor:**
 - View all registered patients
 - View incoming appointment bookings
+- Confirm or cancel appointments
+
+---
+
+## Real email (ukr.net / Gmail)
+
+To send real emails instead of logging to console, set these in `.env`:
+
+**ukr.net (port 465, SSL):**
+```env
+SMTP_HOST=smtp.ukr.net
+SMTP_PORT=465
+SMTP_USE_SSL=true
+SMTP_USER=your-address@ukr.net
+SMTP_PASSWORD=your-password
+SMTP_FROM=your-address@ukr.net
+```
+
+**Gmail (port 587, STARTTLS):**
+```env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USE_SSL=false
+SMTP_USER=your-address@gmail.com
+SMTP_PASSWORD=your-app-password   # generate in Google Account → Security → App passwords
+SMTP_FROM=your-address@gmail.com
+```
+
+Then restart: `docker compose up --build`
 
 ---
 
@@ -81,6 +126,7 @@ Authorization: Bearer <access_token>
 | `POST` | `/auth/forgot-password` | Request password reset code |
 | `POST` | `/auth/reset-password` | Set new password with reset code |
 | `GET` | `/auth/doctors` | List verified doctors (public) |
+| `GET` | `/health` | Liveness probe (Docker healthcheck / load balancer) |
 
 ### Patients (JWT required)
 
@@ -106,7 +152,7 @@ Interactive docs: **http://localhost:8000/docs**
 
 | Role | Can do |
 |------|--------|
-| `doctor` | List all patients · Read any patient · View incoming appointments |
+| `doctor` | List all patients · Read any patient · View incoming appointments · Confirm/cancel appointments |
 | `client` | Register a patient · Read own patient record · Book appointments · View own appointments |
 
 ---
@@ -120,6 +166,7 @@ pip install pytest==8.3.5 pytest-asyncio==0.25.3 httpx==0.28.1 aiosqlite==0.21.0
 
 pytest tests/ -v
 ```
+
 **35 tests** — no Postgres required (in-memory SQLite). Covers:
 - Registration, email sending (mocked), duplicate/weak-password rejection
 - Verification code (correct, wrong, expired)
@@ -134,14 +181,16 @@ pytest tests/ -v
 - Past-time appointment rejection
 - Unauthenticated access rejection
 
+> **Note on 403 vs 401:** Unauthenticated requests return `403` (not `401`). This is FastAPI's `HTTPBearer` behavior — it returns 403 when no `Authorization` header is present. The tests correctly assert `403`.
+
 ---
 
 ## Project structure
 
 ```
 app/
-  config.py               — env vars (DATABASE_URL, JWT_SECRET, SMTP)
-  database.py             — async SQLAlchemy engine + session
+  config.py               — env vars (DATABASE_URL, JWT_SECRET, SMTP, rate limiting)
+  database.py             — async SQLAlchemy engine + connection pool config
   models.py               — User, Patient, Appointment, AuditLog
   schemas.py              — Pydantic request/response schemas
   auth.py                 — JWT decode, get_current_user, require_role()
@@ -151,27 +200,25 @@ app/
   appointment_router.py   — /appointments/* endpoints
   appointment_service.py  — booking logic + doctor notification
   appointment_repository.py — appointment DB queries
-  email_sender.py         — SMTP or console-log fallback
+  email_sender.py         — SMTP (SSL + STARTTLS) or console-log fallback
   router.py               — /patients/* endpoints
   service.py              — patient business logic + audit log
   repository.py           — patient DB queries
-  main.py                 — app factory, middleware, exception handlers
+  main.py                 — app factory, middleware, rate limiter, health endpoint
 frontend/
-  index.html              — single-file mobile-first UI (login/register/verify/app)
+  index.html              — single-file mobile-first UI
 tests/
   conftest.py             — async test client, register_and_login helper
   test_patients.py        — 35 tests
-.env                      — pre-filled demo config (one-command start)
-docker-compose.yml
+.env                      — pre-filled demo config
+.env.example              — template with all options documented
+docker-compose.yml        — postgres + api with healthchecks and restart policy
 Dockerfile
-run-demo.sh               — one-command local demo launcher
 ```
 
 ---
 
 ## Environment variables
-
-All variables are pre-filled in `.env` for demo use. Change before real production.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -179,10 +226,12 @@ All variables are pre-filled in `.env` for demo use. Change before real producti
 | `JWT_SECRET` | `demo-secret-…` | **Change this** for production |
 | `JWT_EXPIRE_MINUTES` | `60` | Token lifetime |
 | `SMTP_HOST` | *(empty)* | Leave empty → codes logged to console |
-| `SMTP_PORT` | `587` | SMTP port |
+| `SMTP_PORT` | `587` | SMTP port (465 for SSL, 587 for STARTTLS) |
+| `SMTP_USE_SSL` | `false` | `true` for port 465 (ukr.net, Gmail SSL) |
 | `SMTP_USER` | *(empty)* | SMTP username |
 | `SMTP_PASSWORD` | *(empty)* | SMTP password |
 | `SMTP_FROM` | `noreply@example.com` | From address |
+| `RATE_LIMIT_AUTH` | `10` | Max auth requests/IP/minute. `0` = disabled |
 | `POSTGRES_USER` | `medical` | DB username (docker-compose) |
 | `POSTGRES_PASSWORD` | `medical_demo_pass` | **Change this** for production |
 | `POSTGRES_DB` | `medical` | DB name |
@@ -198,17 +247,26 @@ All variables are pre-filled in `.env` for demo use. Change before real producti
 - Only **clients** can book appointments
 - Appointment status can be changed only by the **assigned doctor**
 - Double-booking guard rejects conflicting doctor slot requests
+- Rate limiting on auth endpoints (10 req/IP/min, configurable)
 - DB errors return a sanitized `{"detail": "Database error"}` — no internals leaked
 - Security headers on every response (`X-Content-Type-Options`, `X-Frame-Options`, etc.)
 - Docker container runs as **non-root** (`appuser`)
 - `.env` is excluded from the Docker image via `.dockerignore`
-- Indexed DB fields for common high-load queries (`role`, `is_verified`, `owner_id`, appointment lookup fields)
+- Indexed DB fields for common high-load queries
 
-## Production hardening recommendations (next phase)
-1. Add rate limiting and bot protection on `/auth/register`, `/auth/login`, `/auth/forgot-password`.
-2. Add refresh tokens and token revocation/session management.
-3. Replace `create_all` with Alembic migrations for controlled schema evolution.
-4. Add structured logging + metrics + tracing (Prometheus/OpenTelemetry) and health/readiness endpoints.
-5. Add async task queue (Celery/RQ/Arq) for email and notification retries.
-6. Enforce TLS termination + secure cookie/session strategy if browser auth moves away from local storage.
-7. Add audit log extension for appointment status transitions and auth-sensitive events.
+---
+
+## Production hardening (next phase)
+
+1. **Alembic migrations** — replace `create_all` for zero-downtime schema evolution
+2. **Redis rate limiting** — replace in-process limiter with `slowapi` + Redis (shared across workers)
+3. **TLS termination** — nginx/Caddy in front of uvicorn; never expose uvicorn directly
+4. **Async email queue** — Arq or Celery for reliable email delivery with retries
+5. **Refresh tokens** — `POST /auth/refresh` with longer-lived refresh token
+6. **PgBouncer** — connection pooler in transaction mode for national-scale DB load
+7. **Read replicas** — separate read/write DB connections for list endpoints
+8. **Structured logging + metrics** — JSON logs, Prometheus/OpenTelemetry, Grafana dashboards
+9. **Patient search** — full-text search by name/DOB for doctors
+10. **Admin role** — user management, audit log viewer, system health dashboard
+
+See [REVIEW.md](REVIEW.md) for the full engineering review.

@@ -6,629 +6,538 @@
   <title>Patient Registration</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f0f4f8;
-      color: #1a202c;
-      min-height: 100vh;
-    }
-
-    header {
-      background: #2b6cb0;
-      color: #fff;
-      padding: 1rem 1.25rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 1rem;
-      font-weight: 600;
-    }
-
-    #logoutBtn {
-      background: rgba(255,255,255,.2);
-      border: none;
-      color: #fff;
-      padding: .4rem .9rem;
-      border-radius: 6px;
-      font-size: .85rem;
-      cursor: pointer;
-      min-height: 36px;
-      display: none;
-    }
-
-    main {
-      max-width: 520px;
-      margin: 0 auto;
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
-    }
-
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 1.5rem;
-      box-shadow: 0 1px 4px rgba(0,0,0,.08);
-    }
-
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f0f4f8; color: #1a202c; min-height: 100vh; }
+    header { background: #2b6cb0; color: #fff; padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; font-size: 1rem; font-weight: 600; gap: .75rem; }
+    .header-right { display: flex; align-items: center; gap: .5rem; }
+    #langBtn { background: rgba(255,255,255,.2); border: none; color: #fff; padding: .4rem .7rem; border-radius: 6px; font-size: .82rem; cursor: pointer; min-height: 36px; }
+    #logoutBtn { background: rgba(255,255,255,.2); border: none; color: #fff; padding: .4rem .9rem; border-radius: 6px; font-size: .85rem; cursor: pointer; min-height: 36px; display: none; }
+    main { max-width: 520px; margin: 0 auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 1.25rem; }
+    .card { background: #fff; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
     .card h2 { font-size: 1rem; font-weight: 600; margin-bottom: 1.1rem; color: #2d3748; }
-
-    label {
-      display: block;
-      font-size: .85rem;
-      font-weight: 500;
-      color: #4a5568;
-      margin-bottom: .3rem;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: .75rem 1rem;
-      border: 1.5px solid #cbd5e0;
-      border-radius: 8px;
-      font-size: 1rem;
-      margin-bottom: .9rem;
-      -webkit-appearance: none;
-      background: #fff;
-      transition: border-color .15s;
-      font-family: inherit;
-    }
-
+    label { display: block; font-size: .85rem; font-weight: 500; color: #4a5568; margin-bottom: .3rem; }
+    input, select, textarea { width: 100%; padding: .75rem 1rem; border: 1.5px solid #cbd5e0; border-radius: 8px; font-size: 1rem; margin-bottom: .9rem; -webkit-appearance: none; background: #fff; transition: border-color .15s; font-family: inherit; }
     textarea { resize: vertical; min-height: 72px; }
     input:focus, select:focus, textarea:focus { outline: none; border-color: #2b6cb0; }
-
-    .btn {
-      width: 100%;
-      padding: .85rem;
-      background: #2b6cb0;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      min-height: 48px;
-      transition: background .15s;
-    }
-    .btn:active   { background: #2c5282; }
+    .btn { width: 100%; padding: .85rem; background: #2b6cb0; color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; min-height: 48px; transition: background .15s; }
+    .btn:active { background: #2c5282; }
     .btn:disabled { background: #a0aec0; cursor: not-allowed; }
-
     .msg { padding: .7rem 1rem; border-radius: 8px; font-size: .88rem; display: none; margin-bottom: .9rem; }
     .msg.ok  { background: #c6f6d5; color: #22543d; display: block; }
     .msg.err { background: #fed7d7; color: #742a2a; display: block; }
-
-    /* ── Tabs ── */
     .tabs { display: flex; gap: .4rem; margin-bottom: 1.1rem; flex-wrap: wrap; }
-    .tab {
-      flex: 1; min-width: 80px; padding: .55rem .4rem;
-      border: 1.5px solid #cbd5e0; border-radius: 8px;
-      background: none; font-size: .82rem; cursor: pointer;
-      color: #4a5568; min-height: 40px; transition: all .15s; text-align: center;
-    }
+    .tab { flex: 1; min-width: 80px; padding: .55rem .4rem; border: 1.5px solid #cbd5e0; border-radius: 8px; background: none; font-size: .82rem; cursor: pointer; color: #4a5568; min-height: 40px; transition: all .15s; text-align: center; }
     .tab.active { background: #2b6cb0; color: #fff; border-color: #2b6cb0; }
-
-    /* ── Lists ── */
     .item-list { display: flex; flex-direction: column; gap: .75rem; }
-    .item {
-      border: 1.5px solid #e2e8f0;
-      border-radius: 8px;
-      padding: .85rem 1rem;
-      display: flex; flex-direction: column; gap: .25rem;
-    }
+    .item { border: 1.5px solid #e2e8f0; border-radius: 8px; padding: .85rem 1rem; display: flex; flex-direction: column; gap: .25rem; }
     .item-title { font-weight: 600; }
     .item-meta  { font-size: .8rem; color: #718096; }
-    .item-badge {
-      display: inline-block;
-      font-size: .72rem; font-weight: 600;
-      padding: .15rem .5rem; border-radius: 99px;
-      background: #ebf8ff; color: #2b6cb0;
-    }
+    .item-badge { display: inline-block; font-size: .72rem; font-weight: 600; padding: .15rem .5rem; border-radius: 99px; background: #ebf8ff; color: #2b6cb0; }
     .item-badge.pending   { background: #fefcbf; color: #744210; }
     .item-badge.confirmed { background: #c6f6d5; color: #22543d; }
     .item-badge.cancelled { background: #fed7d7; color: #742a2a; }
-
-    /* ── Doctor picker ── */
-    .doctor-option {
-      border: 1.5px solid #e2e8f0;
-      border-radius: 8px;
-      padding: .75rem 1rem;
-      cursor: pointer;
-      transition: border-color .15s, background .15s;
-      margin-bottom: .5rem;
-    }
-    .doctor-option:hover   { border-color: #2b6cb0; background: #ebf8ff; }
-    .doctor-option.selected { border-color: #2b6cb0; background: #ebf8ff; }
-
+    .doctor-option { border: 1.5px solid #e2e8f0; border-radius: 8px; padding: .75rem 1rem; cursor: pointer; transition: border-color .15s, background .15s; margin-bottom: .5rem; }
+    .doctor-option:hover, .doctor-option.selected { border-color: #2b6cb0; background: #ebf8ff; }
     .empty { color: #a0aec0; font-size: .9rem; text-align: center; padding: 1rem 0; }
-
     .screen { display: none; }
     .screen.active { display: block; }
-
-    @media (min-width: 640px) {
-      main { padding: 2rem 1.25rem; }
-    }
+    @media (min-width: 640px) { main { padding: 2rem 1.25rem; } }
   </style>
 </head>
 <body>
 
 <header>
-  <span>🏥 Patient Registration</span>
-  <button id="logoutBtn" onclick="logout()">Log out</button>
+  <span>🏥 <span data-i18n="appTitle">Patient Registration</span></span>
+  <div class="header-right">
+    <button id="langBtn" onclick="toggleLang()">UA</button>
+    <button id="logoutBtn" onclick="logout()" data-i18n="logout">Log out</button>
+  </div>
 </header>
 
 <main>
 
-  <!-- ══════════════════════════════════════════════════════
-       AUTH SCREEN
-  ══════════════════════════════════════════════════════ -->
+  <!-- AUTH SCREEN -->
   <div id="authScreen" class="screen active">
     <div class="card">
       <div class="tabs">
-        <button class="tab active"  onclick="switchTab('login')">Log in</button>
-        <button class="tab"         onclick="switchTab('register')">Register</button>
-        <button class="tab"         onclick="switchTab('verify')">Verify</button>
-        <button class="tab"         onclick="switchTab('forgot')">Reset pwd</button>
+        <button class="tab active"  onclick="switchTab('login')"    data-i18n="tabLogin">Log in</button>
+        <button class="tab"         onclick="switchTab('register')" data-i18n="tabRegister">Register</button>
+        <button class="tab"         onclick="switchTab('verify')"   data-i18n="tabVerify">Verify</button>
+        <button class="tab"         onclick="switchTab('forgot')"   data-i18n="tabForgot">Reset pwd</button>
       </div>
 
       <!-- Login -->
       <div id="tabLogin">
-        <h2>Log in</h2>
+        <h2 data-i18n="tabLogin">Log in</h2>
         <div id="loginMsg" class="msg"></div>
-        <label>Email</label>
+        <label data-i18n="email">Email</label>
         <input id="loginEmail" type="email" autocomplete="email" placeholder="you@example.com" />
-        <label>Password</label>
+        <label data-i18n="password">Password</label>
         <input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••" />
-        <button class="btn" onclick="doLogin()">Log in</button>
+        <button class="btn" onclick="doLogin()" data-i18n="tabLogin">Log in</button>
       </div>
 
       <!-- Register -->
       <div id="tabRegister" style="display:none">
-        <h2>Create account</h2>
+        <h2 data-i18n="createAccount">Create account</h2>
         <div id="registerMsg" class="msg"></div>
-        <label>Full Name</label>
+        <label data-i18n="fullName">Full Name</label>
         <input id="regFullName" type="text" autocomplete="name" placeholder="Jane Doe" />
-        <label>Email</label>
+        <label data-i18n="email">Email</label>
         <input id="regEmail" type="email" autocomplete="email" placeholder="you@example.com" />
-        <label>Password <span style="color:#a0aec0;font-weight:400">(min 8 chars)</span></label>
+        <label><span data-i18n="password">Password</span> <span style="color:#a0aec0;font-weight:400" data-i18n="minChars">(min 8 chars)</span></label>
         <input id="regPassword" type="password" autocomplete="new-password" placeholder="••••••••" />
-        <label>Role</label>
+        <label data-i18n="role">Role</label>
         <select id="regRole">
-          <option value="client">Client (patient)</option>
-          <option value="doctor">Doctor</option>
+          <option value="client" data-i18n="roleClient">Client (patient)</option>
+          <option value="doctor" data-i18n="roleDoctor">Doctor</option>
         </select>
-        <button class="btn" onclick="doRegister()">Create account</button>
+        <button class="btn" onclick="doRegister()" data-i18n="createAccount">Create account</button>
       </div>
 
       <!-- Verify -->
       <div id="tabVerify" style="display:none">
-        <h2>Verify email</h2>
-        <p style="font-size:.88rem;color:#718096;margin-bottom:1rem">
-          Enter the 6-digit code sent to your email.<br>
-          In demo mode the code is printed to the server log.
+        <h2 data-i18n="verifyEmail">Verify email</h2>
+        <p style="font-size:.88rem;color:#718096;margin-bottom:1rem" data-i18n="verifyHint">
+          Enter the 6-digit code sent to your email. In demo mode the code is printed to the server log.
         </p>
         <div id="verifyMsg" class="msg"></div>
-        <label>Email</label>
+        <label data-i18n="email">Email</label>
         <input id="verifyEmail" type="email" autocomplete="email" placeholder="you@example.com" />
-        <label>Code</label>
+        <label data-i18n="code">Code</label>
         <input id="verifyCode" type="text" inputmode="numeric" maxlength="6" placeholder="123456" />
-        <button class="btn" onclick="doVerify()">Verify</button>
+        <button class="btn" onclick="doVerify()" data-i18n="verify">Verify</button>
       </div>
 
-      <!-- Forgot / Reset password -->
+      <!-- Forgot / Reset -->
       <div id="tabForgot" style="display:none">
-        <h2>Reset password</h2>
+        <h2 data-i18n="resetPassword">Reset password</h2>
         <div id="forgotMsg" class="msg"></div>
-
-        <!-- Step 1: request code -->
         <div id="forgotStep1">
-          <label>Email</label>
+          <label data-i18n="email">Email</label>
           <input id="forgotEmail" type="email" autocomplete="email" placeholder="you@example.com" />
-          <button class="btn" onclick="doForgot()">Send reset code</button>
+          <button class="btn" onclick="doForgot()" data-i18n="sendResetCode">Send reset code</button>
         </div>
-
-        <!-- Step 2: enter code + new password (shown after step 1) -->
         <div id="forgotStep2" style="display:none">
-          <label>6-digit code</label>
+          <label data-i18n="sixDigitCode">6-digit code</label>
           <input id="resetCode" type="text" inputmode="numeric" maxlength="6" placeholder="123456" />
-          <label>New password <span style="color:#a0aec0;font-weight:400">(min 8 chars)</span></label>
+          <label><span data-i18n="newPassword">New password</span> <span style="color:#a0aec0;font-weight:400" data-i18n="minChars">(min 8 chars)</span></label>
           <input id="resetPassword" type="password" autocomplete="new-password" placeholder="••••••••" />
-          <button class="btn" onclick="doReset()">Set new password</button>
+          <button class="btn" onclick="doReset()" data-i18n="setNewPassword">Set new password</button>
         </div>
       </div>
-
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════
-       APP SCREEN — DOCTOR
-  ══════════════════════════════════════════════════════ -->
+  <!-- DOCTOR SCREEN -->
   <div id="doctorScreen" class="screen">
-
-    <!-- Patient list -->
     <div class="card">
-      <h2>Registered Patients</h2>
-      <div id="patientList" class="item-list">
-        <p class="empty">Loading…</p>
-      </div>
+      <h2 data-i18n="registeredPatients">Registered Patients</h2>
+      <div id="patientList" class="item-list"><p class="empty" data-i18n="loading">Loading…</p></div>
     </div>
-
-    <!-- Incoming appointments -->
     <div class="card">
-      <h2>Incoming Appointments</h2>
-      <div id="doctorApptList" class="item-list">
-        <p class="empty">Loading…</p>
-      </div>
+      <h2 data-i18n="incomingAppointments">Incoming Appointments</h2>
+      <div id="doctorApptList" class="item-list"><p class="empty" data-i18n="loading">Loading…</p></div>
     </div>
-
   </div>
 
-  <!-- ══════════════════════════════════════════════════════
-       APP SCREEN — CLIENT
-  ══════════════════════════════════════════════════════ -->
+  <!-- CLIENT SCREEN -->
   <div id="clientScreen" class="screen">
-
-    <!-- Register patient record -->
     <div class="card">
-      <h2>My Patient Record</h2>
+      <h2 data-i18n="myPatientRecord">My Patient Record</h2>
       <div id="patientMsg" class="msg"></div>
-      <label>Full Name</label>
+      <label data-i18n="fullName">Full Name</label>
       <input id="fullName" type="text" autocomplete="name" placeholder="Jane Doe" />
-      <label>Date of Birth</label>
+      <label data-i18n="dateOfBirth">Date of Birth</label>
       <input id="birthDate" type="date" />
-      <button class="btn" id="submitPatientBtn" onclick="doCreatePatient()">Save Record</button>
+      <button class="btn" id="submitPatientBtn" onclick="doCreatePatient()" data-i18n="saveRecord">Save Record</button>
     </div>
-
-    <!-- Book appointment -->
     <div class="card">
-      <h2>Book Appointment</h2>
+      <h2 data-i18n="bookAppointment">Book Appointment</h2>
       <div id="bookMsg" class="msg"></div>
-
-      <label>Choose a doctor</label>
-      <div id="doctorPicker"><p class="empty">Loading doctors…</p></div>
+      <label data-i18n="chooseDoctor">Choose a doctor</label>
+      <div id="doctorPicker"><p class="empty" data-i18n="loadingDoctors">Loading doctors…</p></div>
       <input type="hidden" id="selectedDoctorId" />
-
-      <label>Date &amp; Time</label>
+      <label data-i18n="dateTime">Date &amp; Time</label>
       <input id="apptDatetime" type="datetime-local" />
-
-      <label>Notes <span style="color:#a0aec0;font-weight:400">(optional)</span></label>
-      <textarea id="apptNotes" placeholder="Reason for visit…"></textarea>
-
-      <button class="btn" id="bookBtn" onclick="doBook()">Book Appointment</button>
+      <label><span data-i18n="notes">Notes</span> <span style="color:#a0aec0;font-weight:400" data-i18n="optional">(optional)</span></label>
+      <textarea id="apptNotes" data-i18n-placeholder="reasonPlaceholder"></textarea>
+      <button class="btn" id="bookBtn" onclick="doBook()" data-i18n="bookAppointment">Book Appointment</button>
     </div>
-
-    <!-- My appointments -->
     <div class="card">
-      <h2>My Appointments</h2>
-      <div id="clientApptList" class="item-list">
-        <p class="empty">Loading…</p>
-      </div>
+      <h2 data-i18n="myAppointments">My Appointments</h2>
+      <div id="clientApptList" class="item-list"><p class="empty" data-i18n="loading">Loading…</p></div>
     </div>
-
   </div>
 
 </main>
 
 <script>
-  // ── State ─────────────────────────────────────────────────────────────────
-  let token    = sessionStorage.getItem('token') || null;
-  let userRole = sessionStorage.getItem('role')  || null;
+// ── i18n ──────────────────────────────────────────────────────────────────
+const TRANSLATIONS = {
+  en: {
+    appTitle: 'Patient Registration', logout: 'Log out',
+    tabLogin: 'Log in', tabRegister: 'Register', tabVerify: 'Verify', tabForgot: 'Reset pwd',
+    createAccount: 'Create account', verifyEmail: 'Verify email', resetPassword: 'Reset password',
+    email: 'Email', password: 'Password', fullName: 'Full Name', role: 'Role',
+    roleClient: 'Client (patient)', roleDoctor: 'Doctor',
+    minChars: '(min 8 chars)', code: 'Code', verify: 'Verify',
+    sendResetCode: 'Send reset code', sixDigitCode: '6-digit code',
+    newPassword: 'New password', setNewPassword: 'Set new password',
+    verifyHint: 'Enter the 6-digit code sent to your email. In demo mode the code is printed to the server log.',
+    registeredPatients: 'Registered Patients', incomingAppointments: 'Incoming Appointments',
+    myPatientRecord: 'My Patient Record', dateOfBirth: 'Date of Birth', saveRecord: 'Save Record',
+    bookAppointment: 'Book Appointment', chooseDoctor: 'Choose a doctor',
+    dateTime: 'Date & Time', notes: 'Notes', optional: '(optional)',
+    myAppointments: 'My Appointments', loading: 'Loading…', loadingDoctors: 'Loading doctors…',
+    reasonPlaceholder: 'Reason for visit…',
+    noPatients: 'No patients yet.', noAppointments: 'No appointments yet.',
+    noDoctor: 'No doctors registered yet.', couldNotLoad: 'Could not load.',
+    fillAllFields: 'Please fill in all fields.',
+    fillNameEmailPassword: 'Please fill in full name, email, and password.',
+    enterEmail: 'Enter your email.', selectDoctor: 'Please select a doctor.',
+    selectDatetime: 'Please choose a date and time.',
+    accountCreated: '✓ Account created. Check your email (or server log) for the code.',
+    emailVerified: '✓ Email verified. You can now log in.',
+    codeSent: '✓ If that email is registered, a code has been sent.',
+    passwordUpdated: '✓ Password updated. You can now log in.',
+    recordSaved: '✓ Patient record saved.',
+    appointmentBooked: '✓ Appointment booked. The doctor has been notified.',
+    saving: 'Saving…', booking: 'Booking…', networkError: 'Network error.',
+    dob: 'DOB', registered: 'Registered', clientId: 'Client ID', notesLabel: 'Notes',
+  },
+  uk: {
+    appTitle: 'Реєстрація пацієнтів', logout: 'Вийти',
+    tabLogin: 'Увійти', tabRegister: 'Реєстрація', tabVerify: 'Підтвердити', tabForgot: 'Скинути пароль',
+    createAccount: 'Створити акаунт', verifyEmail: 'Підтвердити email', resetPassword: 'Скинути пароль',
+    email: 'Email', password: 'Пароль', fullName: 'Повне ім\'я', role: 'Роль',
+    roleClient: 'Клієнт (пацієнт)', roleDoctor: 'Лікар',
+    minChars: '(мін. 8 символів)', code: 'Код', verify: 'Підтвердити',
+    sendResetCode: 'Надіслати код скидання', sixDigitCode: '6-значний код',
+    newPassword: 'Новий пароль', setNewPassword: 'Встановити новий пароль',
+    verifyHint: 'Введіть 6-значний код, надісланий на вашу пошту. У демо-режимі код виводиться в лог сервера.',
+    registeredPatients: 'Зареєстровані пацієнти', incomingAppointments: 'Вхідні записи',
+    myPatientRecord: 'Мій запис пацієнта', dateOfBirth: 'Дата народження', saveRecord: 'Зберегти запис',
+    bookAppointment: 'Записатись до лікаря', chooseDoctor: 'Оберіть лікаря',
+    dateTime: 'Дата та час', notes: 'Нотатки', optional: '(необов\'язково)',
+    myAppointments: 'Мої записи', loading: 'Завантаження…', loadingDoctors: 'Завантаження лікарів…',
+    reasonPlaceholder: 'Причина звернення…',
+    noPatients: 'Пацієнтів ще немає.', noAppointments: 'Записів ще немає.',
+    noDoctor: 'Лікарів ще не зареєстровано.', couldNotLoad: 'Не вдалося завантажити.',
+    fillAllFields: 'Будь ласка, заповніть усі поля.',
+    fillNameEmailPassword: 'Будь ласка, заповніть ім\'я, email та пароль.',
+    enterEmail: 'Введіть ваш email.', selectDoctor: 'Будь ласка, оберіть лікаря.',
+    selectDatetime: 'Будь ласка, оберіть дату та час.',
+    accountCreated: '✓ Акаунт створено. Перевірте пошту (або лог сервера) для отримання коду.',
+    emailVerified: '✓ Email підтверджено. Тепер ви можете увійти.',
+    codeSent: '✓ Якщо цей email зареєстровано, код надіслано.',
+    passwordUpdated: '✓ Пароль оновлено. Тепер ви можете увійти.',
+    recordSaved: '✓ Запис пацієнта збережено.',
+    appointmentBooked: '✓ Запис створено. Лікаря повідомлено.',
+    saving: 'Збереження…', booking: 'Запис…', networkError: 'Помилка мережі.',
+    dob: 'Дата нар.', registered: 'Зареєстровано', clientId: 'ID клієнта', notesLabel: 'Нотатки',
+  },
+};
 
-  const authH = () => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` });
+// Detect language: saved preference → browser language → English
+const savedLang = localStorage.getItem('lang');
+const browserLang = (navigator.language || '').toLowerCase().startsWith('uk') ? 'uk' : 'en';
+let lang = savedLang || browserLang;
 
-  // ── XSS guard ─────────────────────────────────────────────────────────────
-  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function t(key) { return TRANSLATIONS[lang][key] || TRANSLATIONS.en[key] || key; }
 
-  // ── UI helpers ────────────────────────────────────────────────────────────
-  function showMsg(id, text, type) {
-    const el = document.getElementById(id);
-    el.textContent = text;
-    el.className = 'msg ' + type;
+function applyTranslations() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (el.tagName === 'OPTION') el.textContent = t(key);
+    else el.textContent = t(key);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
+  });
+  document.getElementById('langBtn').textContent = lang === 'en' ? 'UA' : 'EN';
+  document.title = t('appTitle');
+}
+
+function toggleLang() {
+  lang = lang === 'en' ? 'uk' : 'en';
+  localStorage.setItem('lang', lang);
+  applyTranslations();
+}
+
+// ── State ─────────────────────────────────────────────────────────────────
+let token    = sessionStorage.getItem('token') || null;
+let userRole = sessionStorage.getItem('role')  || null;
+
+const authH = () => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` });
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+// ── UI helpers ────────────────────────────────────────────────────────────
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg ' + type;
+}
+function clearMsg(id) { document.getElementById(id).className = 'msg'; }
+
+function setScreen(name) {
+  ['authScreen','doctorScreen','clientScreen'].forEach(s =>
+    document.getElementById(s).classList.toggle('active', s === name + 'Screen' || s === name)
+  );
+  document.getElementById('logoutBtn').style.display = name === 'auth' ? 'none' : 'block';
+}
+
+const TAB_NAMES = ['login','register','verify','forgot'];
+function switchTab(name) {
+  TAB_NAMES.forEach((tab, i) => {
+    document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.display =
+      tab === name ? 'block' : 'none';
+    document.querySelectorAll('.tab')[i].classList.toggle('active', tab === name);
+  });
+}
+
+function fmtDate(iso) {
+  return new Date(iso + 'T00:00:00').toLocaleDateString(lang === 'uk' ? 'uk-UA' : 'en-GB',
+    { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function fmtDatetime(iso) {
+  return new Date(iso).toLocaleString(lang === 'uk' ? 'uk-UA' : 'en-GB',
+    { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────
+async function doRegister() {
+  clearMsg('registerMsg');
+  const fullName = document.getElementById('regFullName').value.trim();
+  const email    = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const role     = document.getElementById('regRole').value;
+  if (!fullName || !email || !password) { showMsg('registerMsg', t('fillNameEmailPassword'), 'err'); return; }
+  const res  = await fetch('/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ full_name: fullName, email, password, role }) });
+  const data = await res.json();
+  if (res.ok) {
+    showMsg('registerMsg', t('accountCreated'), 'ok');
+    document.getElementById('verifyEmail').value = email;
+    setTimeout(() => switchTab('verify'), 1500);
+  } else {
+    const detail = Array.isArray(data.detail) ? data.detail.map(e => e.msg).join(', ') : data.detail ?? t('createAccount');
+    showMsg('registerMsg', detail, 'err');
   }
-  function clearMsg(id) { document.getElementById(id).className = 'msg'; }
+}
 
-  function setScreen(name) {
-    ['authScreen','doctorScreen','clientScreen'].forEach(s =>
-      document.getElementById(s).classList.toggle('active', s === name + 'Screen' || s === name)
-    );
-    document.getElementById('logoutBtn').style.display = name === 'auth' ? 'none' : 'block';
+async function doVerify() {
+  clearMsg('verifyMsg');
+  const email = document.getElementById('verifyEmail').value.trim();
+  const code  = document.getElementById('verifyCode').value.trim();
+  const res  = await fetch('/auth/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, code }) });
+  const data = await res.json();
+  if (res.ok) {
+    showMsg('verifyMsg', t('emailVerified'), 'ok');
+    document.getElementById('loginEmail').value = email;
+    setTimeout(() => switchTab('login'), 1500);
+  } else {
+    showMsg('verifyMsg', data.detail ?? t('verify'), 'err');
   }
+}
 
-  const TAB_NAMES = ['login','register','verify','forgot'];
-  function switchTab(name) {
-    TAB_NAMES.forEach((t, i) => {
-      document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).style.display =
-        t === name ? 'block' : 'none';
-      document.querySelectorAll('.tab')[i].classList.toggle('active', t === name);
-    });
+async function doLogin() {
+  clearMsg('loginMsg');
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const res  = await fetch('/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+  const data = await res.json();
+  if (res.ok) {
+    token = data.access_token;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+      userRole = payload.role;
+    } catch { userRole = 'client'; }
+    sessionStorage.setItem('token', token);
+    sessionStorage.setItem('role', userRole);
+    enterApp();
+  } else {
+    showMsg('loginMsg', data.detail ?? t('tabLogin'), 'err');
   }
+}
 
-  function fmtDate(iso) {
-    return new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', {
-      day: 'numeric', month: 'short', year: 'numeric',
-    });
+async function doForgot() {
+  clearMsg('forgotMsg');
+  const email = document.getElementById('forgotEmail').value.trim();
+  if (!email) { showMsg('forgotMsg', t('enterEmail'), 'err'); return; }
+  const res = await fetch('/auth/forgot-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+  if (res.ok) {
+    showMsg('forgotMsg', t('codeSent'), 'ok');
+    document.getElementById('forgotStep1').style.display = 'none';
+    document.getElementById('forgotStep2').style.display = 'block';
   }
+}
 
-  function fmtDatetime(iso) {
-    return new Date(iso).toLocaleString('en-GB', {
-      day: 'numeric', month: 'short', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-    });
+async function doReset() {
+  clearMsg('forgotMsg');
+  const email       = document.getElementById('forgotEmail').value.trim();
+  const code        = document.getElementById('resetCode').value.trim();
+  const newPassword = document.getElementById('resetPassword').value;
+  const res  = await fetch('/auth/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, code, new_password: newPassword }) });
+  const data = await res.json();
+  if (res.ok) {
+    showMsg('forgotMsg', t('passwordUpdated'), 'ok');
+    document.getElementById('loginEmail').value = email;
+    setTimeout(() => {
+      document.getElementById('forgotStep1').style.display = 'block';
+      document.getElementById('forgotStep2').style.display = 'none';
+      switchTab('login');
+    }, 1800);
+  } else {
+    showMsg('forgotMsg', data.detail ?? t('resetPassword'), 'err');
   }
+}
 
-  // ── Auth ──────────────────────────────────────────────────────────────────
-  async function doRegister() {
-    clearMsg('registerMsg');
-    const fullName = document.getElementById('regFullName').value.trim();
-    const email = document.getElementById('regEmail').value.trim();
-    const password = document.getElementById('regPassword').value;
-    const role = document.getElementById('regRole').value;
-    if (!fullName || !email || !password) {
-      showMsg('registerMsg', 'Please fill in full name, email, and password.', 'err');
-      return;
-    }
-    const res = await fetch('/auth/register', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ full_name: fullName, email, password, role }),
-    });
+function logout() {
+  token = null; userRole = null;
+  sessionStorage.removeItem('token');
+  sessionStorage.removeItem('role');
+  setScreen('auth');
+}
+
+// ── App entry ─────────────────────────────────────────────────────────────
+function enterApp() {
+  if (userRole === 'doctor') {
+    setScreen('doctor');
+    loadPatients();
+    loadDoctorAppointments();
+  } else {
+    setScreen('client');
+    loadDoctors();
+    loadClientAppointments();
+  }
+}
+
+// ── Doctor ────────────────────────────────────────────────────────────────
+async function loadPatients() {
+  try {
+    const res = await fetch('/patients/', { headers: authH() });
+    if (res.status === 401 || res.status === 403) { logout(); return; }
+    const patients = await res.json();
+    const el = document.getElementById('patientList');
+    if (!patients.length) { el.innerHTML = `<p class="empty">${t('noPatients')}</p>`; return; }
+    el.innerHTML = patients.map(p => `
+      <div class="item">
+        <span class="item-title">${esc(p.full_name)}</span>
+        <span class="item-meta">${t('dob')}: ${fmtDate(p.birth_date)}</span>
+        <span class="item-meta">${t('registered')}: ${fmtDatetime(p.created_at)}</span>
+      </div>`).join('');
+  } catch { document.getElementById('patientList').innerHTML = `<p class="empty">${t('couldNotLoad')}</p>`; }
+}
+
+async function loadDoctorAppointments() {
+  try {
+    const res = await fetch('/appointments/', { headers: authH() });
+    if (res.status === 401 || res.status === 403) { logout(); return; }
+    const appts = await res.json();
+    const el = document.getElementById('doctorApptList');
+    if (!appts.length) { el.innerHTML = `<p class="empty">${t('noAppointments')}</p>`; return; }
+    el.innerHTML = appts.map(a => `
+      <div class="item">
+        <span class="item-title">${fmtDatetime(a.scheduled_at)}</span>
+        <span class="item-meta">${t('clientId')}: ${esc(a.client_id)}</span>
+        ${a.notes ? `<span class="item-meta">${t('notesLabel')}: ${esc(a.notes)}</span>` : ''}
+        <span class="item-badge ${a.status}">${esc(a.status)}</span>
+      </div>`).join('');
+  } catch { document.getElementById('doctorApptList').innerHTML = `<p class="empty">${t('couldNotLoad')}</p>`; }
+}
+
+// ── Client ────────────────────────────────────────────────────────────────
+async function doCreatePatient() {
+  clearMsg('patientMsg');
+  const fullName  = document.getElementById('fullName').value.trim();
+  const birthDate = document.getElementById('birthDate').value;
+  if (!fullName || !birthDate) { showMsg('patientMsg', t('fillAllFields'), 'err'); return; }
+  const btn = document.getElementById('submitPatientBtn');
+  btn.disabled = true; btn.textContent = t('saving');
+  try {
+    const res  = await fetch('/patients/', { method: 'POST', headers: authH(), body: JSON.stringify({ full_name: fullName, birth_date: birthDate }) });
     const data = await res.json();
-    if (res.ok) {
-      showMsg('registerMsg', '✓ Account created. Check your email (or server log) for the code.', 'ok');
-      document.getElementById('verifyEmail').value = email;
-      setTimeout(() => switchTab('verify'), 1500);
+    if (res.status === 201) {
+      showMsg('patientMsg', t('recordSaved'), 'ok');
+    } else if (res.status === 401 || res.status === 403) {
+      logout();
     } else {
-      const detail = Array.isArray(data.detail)
-        ? data.detail.map(e => e.msg).join(', ') : data.detail ?? 'Registration failed';
-      showMsg('registerMsg', detail, 'err');
+      const detail = Array.isArray(data.detail) ? data.detail[0]?.msg ?? t('fillAllFields') : data.detail ?? t('saveRecord');
+      showMsg('patientMsg', detail, 'err');
     }
-  }
+  } catch { showMsg('patientMsg', t('networkError'), 'err'); }
+  finally { btn.disabled = false; btn.textContent = t('saveRecord'); }
+}
 
-  async function doVerify() {
-    clearMsg('verifyMsg');
-    const email = document.getElementById('verifyEmail').value.trim();
-    const code  = document.getElementById('verifyCode').value.trim();
-    const res = await fetch('/auth/verify', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, code }),
-    });
+async function loadDoctors() {
+  try {
+    const res     = await fetch('/auth/doctors');
+    const doctors = await res.json();
+    const el = document.getElementById('doctorPicker');
+    if (!doctors.length) { el.innerHTML = `<p class="empty">${t('noDoctor')}</p>`; return; }
+    el.innerHTML = doctors.map(d => `
+      <div class="doctor-option" data-id="${esc(d.id)}" onclick="selectDoctor(this,'${esc(d.id)}')">
+        <strong>${esc(d.full_name)}</strong><br />
+        <span class="item-meta">${esc(d.email)}</span>
+      </div>`).join('');
+  } catch { document.getElementById('doctorPicker').innerHTML = `<p class="empty">${t('couldNotLoad')}</p>`; }
+}
+
+function selectDoctor(el, id) {
+  document.querySelectorAll('.doctor-option').forEach(d => d.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('selectedDoctorId').value = id;
+}
+
+async function doBook() {
+  clearMsg('bookMsg');
+  const doctorId    = document.getElementById('selectedDoctorId').value;
+  const datetimeRaw = document.getElementById('apptDatetime').value;
+  const notes       = document.getElementById('apptNotes').value.trim();
+  if (!doctorId)    { showMsg('bookMsg', t('selectDoctor'), 'err'); return; }
+  if (!datetimeRaw) { showMsg('bookMsg', t('selectDatetime'), 'err'); return; }
+  const scheduledAt = new Date(datetimeRaw).toISOString();
+  const btn = document.getElementById('bookBtn');
+  btn.disabled = true; btn.textContent = t('booking');
+  try {
+    const res  = await fetch('/appointments/', { method: 'POST', headers: authH(), body: JSON.stringify({ doctor_id: doctorId, scheduled_at: scheduledAt, notes: notes || null }) });
     const data = await res.json();
-    if (res.ok) {
-      showMsg('verifyMsg', '✓ Email verified. You can now log in.', 'ok');
-      document.getElementById('loginEmail').value = email;
-      setTimeout(() => switchTab('login'), 1500);
-    } else {
-      showMsg('verifyMsg', data.detail ?? 'Verification failed', 'err');
-    }
-  }
-
-  async function doLogin() {
-    clearMsg('loginMsg');
-    const email    = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
-    const res = await fetch('/auth/login', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      token = data.access_token;
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
-        userRole = payload.role;
-      } catch { userRole = 'client'; }
-      sessionStorage.setItem('token', token);
-      sessionStorage.setItem('role', userRole);
-      enterApp();
-    } else {
-      showMsg('loginMsg', data.detail ?? 'Login failed', 'err');
-    }
-  }
-
-  async function doForgot() {
-    clearMsg('forgotMsg');
-    const email = document.getElementById('forgotEmail').value.trim();
-    if (!email) { showMsg('forgotMsg', 'Enter your email.', 'err'); return; }
-    const res = await fetch('/auth/forgot-password', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
-    if (res.ok) {
-      showMsg('forgotMsg', '✓ If that email is registered, a code has been sent.', 'ok');
-      document.getElementById('forgotStep1').style.display = 'none';
-      document.getElementById('forgotStep2').style.display = 'block';
-    }
-  }
-
-  async function doReset() {
-    clearMsg('forgotMsg');
-    const email       = document.getElementById('forgotEmail').value.trim();
-    const code        = document.getElementById('resetCode').value.trim();
-    const newPassword = document.getElementById('resetPassword').value;
-    const res = await fetch('/auth/reset-password', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, code, new_password: newPassword }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      showMsg('forgotMsg', '✓ Password updated. You can now log in.', 'ok');
-      document.getElementById('loginEmail').value = email;
-      setTimeout(() => {
-        document.getElementById('forgotStep1').style.display = 'block';
-        document.getElementById('forgotStep2').style.display = 'none';
-        switchTab('login');
-      }, 1800);
-    } else {
-      showMsg('forgotMsg', data.detail ?? 'Reset failed', 'err');
-    }
-  }
-
-  function logout() {
-    token = null; userRole = null;
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('role');
-    setScreen('auth');
-  }
-
-  // ── App entry ─────────────────────────────────────────────────────────────
-  function enterApp() {
-    if (userRole === 'doctor') {
-      setScreen('doctor');
-      loadPatients();
-      loadDoctorAppointments();
-    } else {
-      setScreen('client');
-      loadDoctors();
+    if (res.status === 201) {
+      showMsg('bookMsg', t('appointmentBooked'), 'ok');
+      document.getElementById('apptDatetime').value = '';
+      document.getElementById('apptNotes').value = '';
+      document.getElementById('selectedDoctorId').value = '';
+      document.querySelectorAll('.doctor-option').forEach(d => d.classList.remove('selected'));
       loadClientAppointments();
+    } else if (res.status === 401 || res.status === 403) {
+      logout();
+    } else {
+      const detail = Array.isArray(data.detail) ? data.detail[0]?.msg ?? t('fillAllFields') : data.detail ?? t('bookAppointment');
+      showMsg('bookMsg', detail, 'err');
     }
-  }
+  } catch { showMsg('bookMsg', t('networkError'), 'err'); }
+  finally { btn.disabled = false; btn.textContent = t('bookAppointment'); }
+}
 
-  // ── Doctor screens ────────────────────────────────────────────────────────
-  async function loadPatients() {
-    try {
-      const res = await fetch('/patients/', { headers: authH() });
-      if (res.status === 401 || res.status === 403) { logout(); return; }
-      const patients = await res.json();
-      const el = document.getElementById('patientList');
-      if (!patients.length) { el.innerHTML = '<p class="empty">No patients yet.</p>'; return; }
-      el.innerHTML = patients.map(p => `
-        <div class="item">
-          <span class="item-title">${esc(p.full_name)}</span>
-          <span class="item-meta">DOB: ${fmtDate(p.birth_date)}</span>
-          <span class="item-meta">Registered: ${fmtDatetime(p.created_at)}</span>
-        </div>`).join('');
-    } catch {
-      document.getElementById('patientList').innerHTML = '<p class="empty">Could not load.</p>';
-    }
-  }
+async function loadClientAppointments() {
+  try {
+    const res = await fetch('/appointments/', { headers: authH() });
+    if (res.status === 401 || res.status === 403) { logout(); return; }
+    const appts = await res.json();
+    const el = document.getElementById('clientApptList');
+    if (!appts.length) { el.innerHTML = `<p class="empty">${t('noAppointments')}</p>`; return; }
+    el.innerHTML = appts.map(a => `
+      <div class="item">
+        <span class="item-title">${fmtDatetime(a.scheduled_at)}</span>
+        ${a.notes ? `<span class="item-meta">${t('notesLabel')}: ${esc(a.notes)}</span>` : ''}
+        <span class="item-badge ${a.status}">${esc(a.status)}</span>
+      </div>`).join('');
+  } catch { document.getElementById('clientApptList').innerHTML = `<p class="empty">${t('couldNotLoad')}</p>`; }
+}
 
-  async function loadDoctorAppointments() {
-    try {
-      const res = await fetch('/appointments/', { headers: authH() });
-      if (res.status === 401 || res.status === 403) { logout(); return; }
-      const appts = await res.json();
-      const el = document.getElementById('doctorApptList');
-      if (!appts.length) { el.innerHTML = '<p class="empty">No appointments yet.</p>'; return; }
-      el.innerHTML = appts.map(a => `
-        <div class="item">
-          <span class="item-title">${fmtDatetime(a.scheduled_at)}</span>
-          <span class="item-meta">Client ID: ${esc(a.client_id)}</span>
-          ${a.notes ? `<span class="item-meta">Notes: ${esc(a.notes)}</span>` : ''}
-          <span class="item-badge ${a.status}">${esc(a.status)}</span>
-        </div>`).join('');
-    } catch {
-      document.getElementById('doctorApptList').innerHTML = '<p class="empty">Could not load.</p>';
-    }
-  }
-
-  // ── Client screens ────────────────────────────────────────────────────────
-  async function doCreatePatient() {
-    clearMsg('patientMsg');
-    const fullName  = document.getElementById('fullName').value.trim();
-    const birthDate = document.getElementById('birthDate').value;
-    if (!fullName || !birthDate) { showMsg('patientMsg', 'Please fill in all fields.', 'err'); return; }
-
-    const btn = document.getElementById('submitPatientBtn');
-    btn.disabled = true; btn.textContent = 'Saving…';
-    try {
-      const res = await fetch('/patients/', {
-        method: 'POST', headers: authH(),
-        body: JSON.stringify({ full_name: fullName, birth_date: birthDate }),
-      });
-      const data = await res.json();
-      if (res.status === 201) {
-        showMsg('patientMsg', '✓ Patient record saved.', 'ok');
-      } else if (res.status === 401 || res.status === 403) {
-        logout();
-      } else {
-        const detail = Array.isArray(data.detail)
-          ? data.detail[0]?.msg ?? 'Validation error' : data.detail ?? 'Failed';
-        showMsg('patientMsg', detail, 'err');
-      }
-    } catch { showMsg('patientMsg', 'Network error.', 'err'); }
-    finally { btn.disabled = false; btn.textContent = 'Save Record'; }
-  }
-
-  async function loadDoctors() {
-    try {
-      const res = await fetch('/auth/doctors');
-      const doctors = await res.json();
-      const el = document.getElementById('doctorPicker');
-      if (!doctors.length) { el.innerHTML = '<p class="empty">No doctors registered yet.</p>'; return; }
-      el.innerHTML = doctors.map(d => `
-        <div class="doctor-option" data-id="${esc(d.id)}" onclick="selectDoctor(this, '${esc(d.id)}')">
-          <strong>${esc(d.full_name)}</strong><br />
-          <span class="item-meta">${esc(d.email)}</span>
-        </div>`).join('');
-    } catch {
-      document.getElementById('doctorPicker').innerHTML = '<p class="empty">Could not load doctors.</p>';
-    }
-  }
-
-  function selectDoctor(el, id) {
-    document.querySelectorAll('.doctor-option').forEach(d => d.classList.remove('selected'));
-    el.classList.add('selected');
-    document.getElementById('selectedDoctorId').value = id;
-  }
-
-  async function doBook() {
-    clearMsg('bookMsg');
-    const doctorId   = document.getElementById('selectedDoctorId').value;
-    const datetimeRaw = document.getElementById('apptDatetime').value;
-    const notes      = document.getElementById('apptNotes').value.trim();
-
-    if (!doctorId)    { showMsg('bookMsg', 'Please select a doctor.', 'err'); return; }
-    if (!datetimeRaw) { showMsg('bookMsg', 'Please choose a date and time.', 'err'); return; }
-
-    // Convert local datetime-local value to ISO with timezone offset
-    const scheduledAt = new Date(datetimeRaw).toISOString();
-
-    const btn = document.getElementById('bookBtn');
-    btn.disabled = true; btn.textContent = 'Booking…';
-    try {
-      const res = await fetch('/appointments/', {
-        method: 'POST', headers: authH(),
-        body: JSON.stringify({ doctor_id: doctorId, scheduled_at: scheduledAt, notes: notes || null }),
-      });
-      const data = await res.json();
-      if (res.status === 201) {
-        showMsg('bookMsg', '✓ Appointment booked. The doctor has been notified.', 'ok');
-        document.getElementById('apptDatetime').value = '';
-        document.getElementById('apptNotes').value = '';
-        document.getElementById('selectedDoctorId').value = '';
-        document.querySelectorAll('.doctor-option').forEach(d => d.classList.remove('selected'));
-        loadClientAppointments();
-      } else if (res.status === 401 || res.status === 403) {
-        logout();
-      } else {
-        const detail = Array.isArray(data.detail)
-          ? data.detail[0]?.msg ?? 'Validation error' : data.detail ?? 'Booking failed';
-        showMsg('bookMsg', detail, 'err');
-      }
-    } catch { showMsg('bookMsg', 'Network error.', 'err'); }
-    finally { btn.disabled = false; btn.textContent = 'Book Appointment'; }
-  }
-
-  async function loadClientAppointments() {
-    try {
-      const res = await fetch('/appointments/', { headers: authH() });
-      if (res.status === 401 || res.status === 403) { logout(); return; }
-      const appts = await res.json();
-      const el = document.getElementById('clientApptList');
-      if (!appts.length) { el.innerHTML = '<p class="empty">No appointments yet.</p>'; return; }
-      el.innerHTML = appts.map(a => `
-        <div class="item">
-          <span class="item-title">${fmtDatetime(a.scheduled_at)}</span>
-          ${a.notes ? `<span class="item-meta">Notes: ${esc(a.notes)}</span>` : ''}
-          <span class="item-badge ${a.status}">${esc(a.status)}</span>
-        </div>`).join('');
-    } catch {
-      document.getElementById('clientApptList').innerHTML = '<p class="empty">Could not load.</p>';
-    }
-  }
-
-  // ── Boot ──────────────────────────────────────────────────────────────────
-  if (token) { enterApp(); } else { setScreen('auth'); }
+// ── Boot ──────────────────────────────────────────────────────────────────
+applyTranslations();
+if (token) { enterApp(); } else { setScreen('auth'); }
 </script>
 </body>
 </html>

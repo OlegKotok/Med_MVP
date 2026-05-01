@@ -11,6 +11,13 @@ class Settings(BaseSettings):
     SMTP_USER: str = ""
     SMTP_PASSWORD: str = ""
     SMTP_FROM: str = "noreply@example.com"
+    # Set True for implicit TLS (port 465, e.g. ukr.net, Gmail).
+    # Set False for STARTTLS (port 587).
+    SMTP_USE_SSL: bool = False
+
+    # Simple in-process rate limiting for auth endpoints (requests per minute per IP).
+    # For production, replace with Redis-backed slowapi or nginx rate limiting.
+    RATE_LIMIT_AUTH: int = 10
 
     model_config = SettingsConfigDict(
         env_file=".env",

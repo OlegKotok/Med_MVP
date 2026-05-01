@@ -1,26 +1,53 @@
 services:
   db:
     image: postgres:16-alpine
+    pull_policy: never
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - pgdata:/var/lib/postgresql/data
+    # Tune shared_buffers and connection limit for moderate load.
+    # For national-scale: use PgBouncer + dedicated Postgres instance.
+    command: >
+      postgres
+      -c shared_buffers=256MB
+      -c max_connections=200
+      -c work_mem=4MB
+      -c maintenance_work_mem=64MB
+      -c effective_cache_size=512MB
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 5s
       timeout: 5s
       retries: 10
+    restart: unless-stopped
 
   api:
     build: .
-    env_file: .env          # pass every variable from .env into the container
+    env_file: .env
     ports:
       - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
+    # 4 uvicorn workers — tune to 2×CPU cores in production.
+    # For national-scale: run multiple replicas behind a load balancer.
+    command: >
+      uvicorn app.main:app
+      --host 0.0.0.0
+      --port 8000
+      --workers 4
+      --loop uvloop
+      --http httptools
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
 
 volumes:
   pgdata:

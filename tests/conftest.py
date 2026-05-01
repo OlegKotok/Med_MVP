@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 os.environ.setdefault("JWT_SECRET", "test-secret")
+os.environ.setdefault("RATE_LIMIT_AUTH", "0")  # disable rate limiting in tests
 
 # Patch postgresql.UUID → String(36) for SQLite compatibility
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
