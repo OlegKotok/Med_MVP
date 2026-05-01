@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 def _send(to: str, subject: str, body: str) -> None:
     """Send an email or log it to console in demo mode."""
     if not settings.SMTP_HOST:
-        logger.info("📧 [DEMO] To: %s | Subject: %s | Body: %s", to, subject, body)
+        logger.warning("📧 [DEMO] To: %s | Subject: %s | Body: %s", to, subject, body)
         return
     msg = EmailMessage()
     msg["Subject"] = subject

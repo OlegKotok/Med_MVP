@@ -40,4 +40,5 @@ def require_role(*roles: str):
 
 # Convenience aliases used in routers
 require_doctor = require_role("doctor")
+require_client = require_role("client")
 require_any    = require_role("doctor", "client")

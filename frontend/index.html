@@ -360,12 +360,17 @@
   // ── Auth ──────────────────────────────────────────────────────────────────
   async function doRegister() {
     clearMsg('registerMsg');
+    const fullName = document.getElementById('regFullName').value.trim();
     const email = document.getElementById('regEmail').value.trim();
     const password = document.getElementById('regPassword').value;
     const role = document.getElementById('regRole').value;
+    if (!fullName || !email || !password) {
+      showMsg('registerMsg', 'Please fill in full name, email, and password.', 'err');
+      return;
+    }
     const res = await fetch('/auth/register', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, role }),
+      body: JSON.stringify({ full_name: fullName, email, password, role }),
     });
     const data = await res.json();
     if (res.ok) {
@@ -552,7 +557,8 @@
       if (!doctors.length) { el.innerHTML = '<p class="empty">No doctors registered yet.</p>'; return; }
       el.innerHTML = doctors.map(d => `
         <div class="doctor-option" data-id="${esc(d.id)}" onclick="selectDoctor(this, '${esc(d.id)}')">
-          <strong>${esc(d.email)}</strong>
+          <strong>${esc(d.full_name)}</strong><br />
+          <span class="item-meta">${esc(d.email)}</span>
         </div>`).join('');
     } catch {
       document.getElementById('doctorPicker').innerHTML = '<p class="empty">Could not load doctors.</p>';

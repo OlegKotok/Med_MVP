@@ -1,8 +1,9 @@
+import logging
 import random
 import string
-import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+import anyio
 
 from fastapi import HTTPException, status
 from jose import jwt
@@ -17,6 +18,7 @@ from app.schemas import RegisterRequest, LoginRequest, TokenResponse, ForgotPass
 
 _pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
 CODE_TTL_MINUTES = 15
+logger = logging.getLogger(__name__)
 
 
 def _hash(password: str) -> str:
@@ -51,13 +53,20 @@ def _is_expired(dt: Optional[datetime]) -> bool:
     return now > dt
 
 
+async def _send_email_safely(func, *args) -> None:
+    try:
+        await anyio.to_thread.run_sync(func, *args)
+    except Exception:
+        logger.exception("Email delivery failed for %s", getattr(func, "__name__", "unknown"))
+
+
 async def register(db: AsyncSession, data: RegisterRequest) -> dict:
     if await repo.get_user_by_email(db, data.email):
         raise HTTPException(status_code=400, detail="Email already registered")
     code = _make_code()
     await repo.create_user(db, data.email, data.full_name, _hash(data.password), data.role, code, _code_expiry())
     await db.commit()
-    send_verification_email(data.email, code)
+    await _send_email_safely(send_verification_email, data.email, code)
     return {"detail": "Verification code sent to your email"}
 
 
@@ -87,7 +96,7 @@ async def forgot_password(db: AsyncSession, data: ForgotPasswordRequest) -> dict
         code = _make_code()
         await repo.set_reset_code(db, user, code, _code_expiry())
         await db.commit()
-        send_password_reset_email(data.email, code)
+        await _send_email_safely(send_password_reset_email, data.email, code)
     return {"detail": "If that email is registered, a reset code has been sent"}
 
 

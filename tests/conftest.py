@@ -56,7 +56,7 @@ async def client():
 async def register_and_login(client: AsyncClient, email: str, role: str) -> str:
     """Register → verify → login → return Bearer token."""
     await client.post("/auth/register", json={
-        "email": email, "password": "password123", "role": role,
+        "email": email, "password": "password123", "role": role, "full_name": "Test User",
     })
     await client.post("/auth/verify", json={"email": email, "code": TEST_CODE})
     resp = await client.post("/auth/login", json={"email": email, "password": "password123"})

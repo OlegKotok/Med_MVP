@@ -6,15 +6,15 @@ A production-minded async REST API + mobile-first web UI for patient registratio
 
 ---
 
-## One-command start
+## One-command demo start
 
 ```bash
-git clone <repo-url>
-cd Medical_System
-docker compose up --build
+./run-demo.sh
 ```
 
-Open **http://localhost:8000** — that's it. No extra setup required.
+Run it from the project root. The script auto-creates `.env` from `.env.example` if needed and starts the full stack.
+
+Open **http://localhost:8000** — that's it.
 
 The `.env` file is pre-filled with demo values. Verification codes are printed to the Docker log (no mail server needed):
 
@@ -27,7 +27,7 @@ docker compose logs api   # look here for verification codes in demo mode
 ## How to use the demo
 
 1. Open http://localhost:8000
-2. Click **Register** → enter email, password, choose role (`client` or `doctor`)
+2. Click **Register** → enter full name, email, password, and role (`client` or `doctor`)
 3. Click **Verify** → paste the 6-digit code from the Docker log
 4. Click **Log in** → you're in
 
@@ -46,7 +46,7 @@ docker compose logs api   # look here for verification codes in demo mode
 ## Authentication flow
 
 ```
-POST /auth/register      { email, password, role: "doctor"|"client" }
+POST /auth/register      { full_name, email, password, role: "doctor"|"client" }
   → sends 6-digit code to email (valid 15 min)
 
 POST /auth/verify        { email, code }
@@ -95,7 +95,8 @@ Authorization: Bearer <access_token>
 | Method | Path | Description |
 |--------|------|-------------|
 | `POST` | `/appointments/` | Book appointment with a doctor |
-| `GET` | `/appointments/` | My appointments (doctor: incoming; client: own) |
+| `GET` | `/appointments/` | My appointments (doctor: incoming; client: own), paginated via `limit`/`offset` |
+| `PATCH` | `/appointments/{id}/status` | Doctor confirms/cancels assigned appointment |
 
 Interactive docs: **http://localhost:8000/docs**
 
@@ -119,8 +120,7 @@ pip install pytest==8.3.5 pytest-asyncio==0.25.3 httpx==0.28.1 aiosqlite==0.21.0
 
 pytest tests/ -v
 ```
-
-**31 tests** — no Postgres required (in-memory SQLite). Covers:
+**35 tests** — no Postgres required (in-memory SQLite). Covers:
 - Registration, email sending (mocked), duplicate/weak-password rejection
 - Verification code (correct, wrong, expired)
 - Login (success, wrong password, unverified account)
@@ -128,6 +128,9 @@ pytest tests/ -v
 - Doctor listing (public, excludes clients)
 - Patient CRUD + role enforcement + client data isolation
 - Appointment booking + doctor email notification (mocked)
+- Appointment booking permission (client-only)
+- Appointment double-booking conflict rejection (`409`)
+- Appointment status updates (assigned doctor only)
 - Past-time appointment rejection
 - Unauthenticated access rejection
 
@@ -157,10 +160,11 @@ frontend/
   index.html              — single-file mobile-first UI (login/register/verify/app)
 tests/
   conftest.py             — async test client, register_and_login helper
-  test_patients.py        — 31 tests
+  test_patients.py        — 35 tests
 .env                      — pre-filled demo config (one-command start)
 docker-compose.yml
 Dockerfile
+run-demo.sh               — one-command local demo launcher
 ```
 
 ---
@@ -191,8 +195,20 @@ All variables are pre-filled in `.env` for demo use. Change before real producti
 - Verification and reset codes expire after **15 minutes**
 - JWT tokens signed with HS256, configurable expiry
 - Clients can only access **their own** patient records
+- Only **clients** can book appointments
+- Appointment status can be changed only by the **assigned doctor**
+- Double-booking guard rejects conflicting doctor slot requests
 - DB errors return a sanitized `{"detail": "Database error"}` — no internals leaked
 - Security headers on every response (`X-Content-Type-Options`, `X-Frame-Options`, etc.)
 - Docker container runs as **non-root** (`appuser`)
 - `.env` is excluded from the Docker image via `.dockerignore`
-- **For real production:** change `JWT_SECRET` and `POSTGRES_PASSWORD`, add TLS (nginx/Caddy), add rate limiting on auth endpoints
+- Indexed DB fields for common high-load queries (`role`, `is_verified`, `owner_id`, appointment lookup fields)
+
+## Production hardening recommendations (next phase)
+1. Add rate limiting and bot protection on `/auth/register`, `/auth/login`, `/auth/forgot-password`.
+2. Add refresh tokens and token revocation/session management.
+3. Replace `create_all` with Alembic migrations for controlled schema evolution.
+4. Add structured logging + metrics + tracing (Prometheus/OpenTelemetry) and health/readiness endpoints.
+5. Add async task queue (Celery/RQ/Arq) for email and notification retries.
+6. Enforce TLS termination + secure cookie/session strategy if browser auth moves away from local storage.
+7. Add audit log extension for appointment status transitions and auth-sensitive events.

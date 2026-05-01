@@ -5,13 +5,25 @@ login, password reset, doctor listing, patient CRUD + roles,
 appointment booking + doctor email notification, role enforcement.
 """
 import pytest
-from unittest.mock import patch, call
-from httpx import AsyncClient, ASGITransport
-from app.main import app
+from unittest.mock import patch
 from tests.conftest import register_and_login, TEST_CODE
 
 VALID_PATIENT = {"full_name": "Jane Doe", "birth_date": "1990-05-15"}
 FUTURE_DT = "2099-01-15T10:00:00+00:00"
+
+
+def reg_payload(
+    email: str,
+    role: str = "client",
+    password: str = "password123",
+    full_name: str = "Test User",
+) -> dict:
+    return {
+        "email": email,
+        "password": password,
+        "role": role,
+        "full_name": full_name,
+    }
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -22,16 +34,14 @@ FUTURE_DT = "2099-01-15T10:00:00+00:00"
 async def test_register_sends_verification_email(client):
     """Registration must trigger send_verification_email with the user's address."""
     with patch("app.auth_service.send_verification_email") as mock_send:
-        resp = await client.post("/auth/register", json={
-            "email": "new@example.com", "password": "password123", "role": "client",
-        })
+        resp = await client.post("/auth/register", json=reg_payload("new@example.com"))
     assert resp.status_code == 201
     mock_send.assert_called_once_with("new@example.com", TEST_CODE)
 
 
 @pytest.mark.asyncio
 async def test_register_duplicate_email(client):
-    data = {"email": "dup@example.com", "password": "password123", "role": "client"}
+    data = reg_payload("dup@example.com")
     await client.post("/auth/register", json=data)
     resp = await client.post("/auth/register", json=data)
     assert resp.status_code == 400
@@ -39,17 +49,13 @@ async def test_register_duplicate_email(client):
 
 @pytest.mark.asyncio
 async def test_register_weak_password(client):
-    resp = await client.post("/auth/register", json={
-        "email": "x@example.com", "password": "short", "role": "client",
-    })
+    resp = await client.post("/auth/register", json=reg_payload("x@example.com", password="short"))
     assert resp.status_code == 422
 
 
 @pytest.mark.asyncio
 async def test_register_invalid_role(client):
-    resp = await client.post("/auth/register", json={
-        "email": "x@example.com", "password": "password123", "role": "admin",
-    })
+    resp = await client.post("/auth/register", json=reg_payload("x@example.com", role="admin"))
     assert resp.status_code == 422
 
 
@@ -59,18 +65,14 @@ async def test_register_invalid_role(client):
 
 @pytest.mark.asyncio
 async def test_verify_correct_code(client):
-    await client.post("/auth/register", json={
-        "email": "v@example.com", "password": "password123", "role": "client",
-    })
+    await client.post("/auth/register", json=reg_payload("v@example.com"))
     resp = await client.post("/auth/verify", json={"email": "v@example.com", "code": TEST_CODE})
     assert resp.status_code == 200
 
 
 @pytest.mark.asyncio
 async def test_verify_wrong_code(client):
-    await client.post("/auth/register", json={
-        "email": "w@example.com", "password": "password123", "role": "client",
-    })
+    await client.post("/auth/register", json=reg_payload("w@example.com"))
     resp = await client.post("/auth/verify", json={"email": "w@example.com", "code": "000000"})
     assert resp.status_code == 400
 
@@ -80,9 +82,7 @@ async def test_verify_expired_code(client, monkeypatch):
     """Simulate an expired code by patching _is_expired to always return True."""
     import app.auth_service as svc
 
-    await client.post("/auth/register", json={
-        "email": "exp@example.com", "password": "password123", "role": "client",
-    })
+    await client.post("/auth/register", json=reg_payload("exp@example.com"))
     monkeypatch.setattr(svc, "_is_expired", lambda dt: True)
     resp = await client.post("/auth/verify", json={"email": "exp@example.com", "code": TEST_CODE})
     assert resp.status_code == 400
@@ -90,9 +90,7 @@ async def test_verify_expired_code(client, monkeypatch):
 
 @pytest.mark.asyncio
 async def test_login_before_verify_blocked(client):
-    await client.post("/auth/register", json={
-        "email": "unverified@example.com", "password": "password123", "role": "client",
-    })
+    await client.post("/auth/register", json=reg_payload("unverified@example.com"))
     resp = await client.post("/auth/login", json={
         "email": "unverified@example.com", "password": "password123",
     })
@@ -270,7 +268,7 @@ async def test_pagination(client):
 @pytest.mark.asyncio
 async def test_book_appointment_sends_doctor_email(client):
     """Booking must trigger send_appointment_notification to the doctor."""
-    doc_token = await register_and_login(client, "dr_appt@example.com", "doctor")
+    await register_and_login(client, "dr_appt@example.com", "doctor")
     cl_token  = await register_and_login(client, "cl_appt@example.com", "client")
 
     # Get doctor's id from the public doctors list
@@ -286,9 +284,9 @@ async def test_book_appointment_sends_doctor_email(client):
 
     assert resp.status_code == 201
     mock_notify.assert_called_once()
-    args = mock_notify.call_args
-    assert args.kwargs["doctor_email"] == "dr_appt@example.com"
-    assert args.kwargs["client_email"] == "cl_appt@example.com"
+    args = mock_notify.call_args.args
+    assert args[0] == "dr_appt@example.com"
+    assert args[2] == "cl_appt@example.com"
 
 
 @pytest.mark.asyncio
@@ -303,7 +301,7 @@ async def test_book_appointment_nonexistent_doctor(client):
 
 @pytest.mark.asyncio
 async def test_book_appointment_past_time_rejected(client):
-    doc_token = await register_and_login(client, "dr_past@example.com", "doctor")
+    await register_and_login(client, "dr_past@example.com", "doctor")
     cl_token  = await register_and_login(client, "cl_past@example.com", "client")
     doctors = (await client.get("/auth/doctors")).json()
     doctor_id = next(d["id"] for d in doctors if d["email"] == "dr_past@example.com")
@@ -317,7 +315,7 @@ async def test_book_appointment_past_time_rejected(client):
 
 @pytest.mark.asyncio
 async def test_client_sees_own_appointments(client):
-    doc_token = await register_and_login(client, "dr_mine@example.com", "doctor")
+    await register_and_login(client, "dr_mine@example.com", "doctor")
     cl_token  = await register_and_login(client, "cl_mine@example.com", "client")
     doctors = (await client.get("/auth/doctors")).json()
     doctor_id = next(d["id"] for d in doctors if d["email"] == "dr_mine@example.com")
@@ -356,3 +354,85 @@ async def test_unauthenticated_cannot_book(client):
         "scheduled_at": FUTURE_DT,
     })
     assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_doctor_cannot_book_as_client(client):
+    doctor_token = await register_and_login(client, "dr_not_client@example.com", "doctor")
+    await register_and_login(client, "dr_target@example.com", "doctor")
+    doctors = (await client.get("/auth/doctors")).json()
+    doctor_id = next(d["id"] for d in doctors if d["email"] == "dr_target@example.com")
+
+    resp = await client.post("/appointments/", json={
+        "doctor_id": doctor_id,
+        "scheduled_at": FUTURE_DT,
+    }, headers={"Authorization": f"Bearer {doctor_token}"})
+    assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_book_appointment_conflicting_slot_returns_409(client):
+    await register_and_login(client, "dr_conflict@example.com", "doctor")
+    first_client_token = await register_and_login(client, "cl_conflict_1@example.com", "client")
+    second_client_token = await register_and_login(client, "cl_conflict_2@example.com", "client")
+    doctors = (await client.get("/auth/doctors")).json()
+    doctor_id = next(d["id"] for d in doctors if d["email"] == "dr_conflict@example.com")
+
+    with patch("app.appointment_service.send_appointment_notification"):
+        first = await client.post("/appointments/", json={
+            "doctor_id": doctor_id,
+            "scheduled_at": FUTURE_DT,
+        }, headers={"Authorization": f"Bearer {first_client_token}"})
+        second = await client.post("/appointments/", json={
+            "doctor_id": doctor_id,
+            "scheduled_at": FUTURE_DT,
+        }, headers={"Authorization": f"Bearer {second_client_token}"})
+
+    assert first.status_code == 201
+    assert second.status_code == 409
+
+
+@pytest.mark.asyncio
+async def test_assigned_doctor_can_update_appointment_status(client):
+    doctor_token = await register_and_login(client, "dr_status_ok@example.com", "doctor")
+    client_token = await register_and_login(client, "cl_status_ok@example.com", "client")
+    doctors = (await client.get("/auth/doctors")).json()
+    doctor_id = next(d["id"] for d in doctors if d["email"] == "dr_status_ok@example.com")
+
+    with patch("app.appointment_service.send_appointment_notification"):
+        created = await client.post("/appointments/", json={
+            "doctor_id": doctor_id,
+            "scheduled_at": FUTURE_DT,
+        }, headers={"Authorization": f"Bearer {client_token}"})
+
+    appt_id = created.json()["id"]
+    updated = await client.patch(
+        f"/appointments/{appt_id}/status",
+        json={"status": "confirmed"},
+        headers={"Authorization": f"Bearer {doctor_token}"},
+    )
+    assert updated.status_code == 200
+    assert updated.json()["status"] == "confirmed"
+
+
+@pytest.mark.asyncio
+async def test_other_doctor_cannot_update_appointment_status(client):
+    await register_and_login(client, "dr_status_owner@example.com", "doctor")
+    other_doctor_token = await register_and_login(client, "dr_status_other@example.com", "doctor")
+    client_token = await register_and_login(client, "cl_status_other@example.com", "client")
+    doctors = (await client.get("/auth/doctors")).json()
+    doctor_id = next(d["id"] for d in doctors if d["email"] == "dr_status_owner@example.com")
+
+    with patch("app.appointment_service.send_appointment_notification"):
+        created = await client.post("/appointments/", json={
+            "doctor_id": doctor_id,
+            "scheduled_at": FUTURE_DT,
+        }, headers={"Authorization": f"Bearer {client_token}"})
+
+    appt_id = created.json()["id"]
+    updated = await client.patch(
+        f"/appointments/{appt_id}/status",
+        json={"status": "cancelled"},
+        headers={"Authorization": f"Bearer {other_doctor_token}"},
+    )
+    assert updated.status_code == 403
