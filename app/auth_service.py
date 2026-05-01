@@ -35,7 +35,7 @@ def _make_code() -> str:
 
 def _make_token(user: User) -> str:
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.JWT_EXPIRE_MINUTES)
-    return jwt.encode({"sub": str(user.id), "role": user.role, "exp": expire},
+    return jwt.encode({"sub": str(user.id), "role": user.role, "name": user.full_name, "exp": expire},
                       settings.JWT_SECRET, algorithm="HS256")
 
 

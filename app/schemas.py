@@ -103,5 +103,7 @@ class AppointmentResponse(BaseModel):
     notes: Optional[str]
     status: str
     created_at: datetime
+    client_name: Optional[str] = None
+    client_email: Optional[str] = None
 
     model_config = {"from_attributes": True}

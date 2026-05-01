@@ -351,6 +351,7 @@ async function doLogin() {
     try {
       const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
       userRole = payload.role;
+      if (payload.name) sessionStorage.setItem('userName', payload.name);
     } catch { userRole = 'client'; }
     sessionStorage.setItem('token', token);
     sessionStorage.setItem('role', userRole);
@@ -396,6 +397,7 @@ function logout() {
   token = null; userRole = null;
   sessionStorage.removeItem('token');
   sessionStorage.removeItem('role');
+  sessionStorage.removeItem('userName');
   setScreen('auth');
 }
 
@@ -407,6 +409,9 @@ function enterApp() {
     loadDoctorAppointments();
   } else {
     setScreen('client');
+    // Pre-fill patient name from the user's own registration name
+    const savedName = sessionStorage.getItem('userName');
+    if (savedName) document.getElementById('fullName').value = savedName;
     loadDoctors();
     loadClientAppointments();
   }
@@ -439,7 +444,7 @@ async function loadDoctorAppointments() {
     el.innerHTML = appts.map(a => `
       <div class="item">
         <span class="item-title">${fmtDatetime(a.scheduled_at)}</span>
-        <span class="item-meta">${t('clientId')}: ${esc(a.client_id)}</span>
+        <span class="item-meta">${a.client_name ? esc(a.client_name) + (a.client_email ? ' &lt;' + esc(a.client_email) + '&gt;' : '') : esc(a.client_id)}</span>
         ${a.notes ? `<span class="item-meta">${t('notesLabel')}: ${esc(a.notes)}</span>` : ''}
         <span class="item-badge ${a.status}">${esc(a.status)}</span>
       </div>`).join('');
