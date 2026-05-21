@@ -48,6 +48,8 @@ docker-compose.yml     API + PostgreSQL demo
 
 ## Running
 
+Run the full MVP demo with one Docker command:
+
 ```bash
 docker compose up --build
 ```
@@ -65,3 +67,5 @@ curl -X POST http://localhost:8000/patients \
 ```bash
 .venv/bin/python -m pytest -q
 ```
+
+The tests cover the patient API, validation, audit log creation, health check, and static frontend files.

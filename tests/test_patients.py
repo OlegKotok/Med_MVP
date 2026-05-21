@@ -55,3 +55,21 @@ async def test_health_check(client):
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+async def test_frontend_page_is_served(client):
+    response = await client.get("/")
+
+    assert response.status_code == 200
+    assert "Patient registration" in response.text
+    assert 'id="patient-form"' in response.text
+
+
+async def test_frontend_assets_are_served(client):
+    script_response = await client.get("/app.js")
+    styles_response = await client.get("/styles.css")
+
+    assert script_response.status_code == 200
+    assert 'fetch("/patients"' in script_response.text
+    assert styles_response.status_code == 200
+    assert ".panel" in styles_response.text
