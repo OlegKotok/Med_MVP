@@ -62,6 +62,29 @@ curl -X POST http://localhost:8000/patients \
   -d '{"full_name":"Ada Lovelace","birth_date":"1815-12-10"}'
 ```
 
+If Compose fails with `docker.sock: no such file or directory`, start Docker Desktop first and rerun the same command.
+
+To stop the demo:
+
+```bash
+docker compose down
+```
+
+## Development
+
+Use the local virtual environment for development:
+
+```bash
+.venv/bin/python -m pytest -q
+```
+
+For a local non-Docker preview, provide a database URL and run Uvicorn from the same virtual environment:
+
+```bash
+DATABASE_URL=sqlite+aiosqlite:////tmp/med_mvp_dev.db \
+  .venv/bin/python -m uvicorn app.main:app --reload
+```
+
 ## Tests
 
 ```bash
