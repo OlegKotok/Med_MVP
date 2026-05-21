@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Patient Registration</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="panel" aria-labelledby="title">
+        <div class="header">
+          <p class="eyebrow">Medical MVP</p>
+          <h1 id="title">Patient registration</h1>
+        </div>
+
+        <form id="patient-form" class="form">
+          <label>
+            Full name
+            <input id="full_name" name="full_name" type="text" maxlength="200" required autocomplete="name" />
+          </label>
+
+          <label>
+            Birth date
+            <input id="birth_date" name="birth_date" type="date" required />
+          </label>
+
+          <button type="submit">Create patient</button>
+        </form>
+
+        <p id="message" class="message" role="status"></p>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>
