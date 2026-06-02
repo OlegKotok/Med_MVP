@@ -90,4 +90,4 @@ To transition from MVP to national-scale production, the following are planned:
 Distributed under the **MIT License**. See `LICENSE` for more information.
 
 ---
-*Created by [Your Name/Github Handle] as a demonstration of modern backend excellence.*
+*Created by Oleg Kotok as a demonstration of modern backend excellence.*
