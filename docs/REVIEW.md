@@ -187,9 +187,9 @@ Phase 3:           Kubernetes + Redis + async email queue + read replicas → na
 SMTP_HOST=smtp.ukr.net
 SMTP_PORT=465
 SMTP_USE_SSL=true
-SMTP_USER=kotok_oleg@ukr.net
+SMTP_USER=your-email@example.com
 SMTP_PASSWORD=<your-password>
-SMTP_FROM=kotok_oleg@ukr.net
+SMTP_FROM=your-email@example.com
 ```
 
 ### Gmail (alternative)
